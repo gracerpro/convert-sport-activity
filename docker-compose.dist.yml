@@ -1,0 +1,19 @@
+services:
+  php-cli:
+    build: ./docker/php-cli
+    container_name: convert-sport-activity__php-cli
+    restart: on-failure
+    tty: true
+    environment:
+      PHP_EXTENSION_XDEBUG: 1
+      PHP_INI_XDEBUG__REMOTE_PORT: 9003
+      PHP_IDE_CONFIG: "serverName=localhost"
+      XDEBUG_CONFIG: "remote_port=9003 remote_autostart=1"
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./docker/php-cli/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    expose:
+      - 9003
+    extra_hosts:
+      - "host.docker.internal:0.0.0.0"

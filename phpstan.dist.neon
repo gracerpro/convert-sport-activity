@@ -1,0 +1,11 @@
+parameters:
+    level: 5
+    parallel:
+        jobSize: 20
+        maximumNumberOfProcesses: 4
+        minimumNumberOfJobsPerProcess: 2
+    paths:
+        - src
+    excludePaths:
+        analyseAndScan:
+            - vendor/*
