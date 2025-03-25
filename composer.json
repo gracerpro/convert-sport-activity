@@ -2,6 +2,8 @@
     "name": "gracerpro/convert-sport-activity",
     "type": "library",
     "description": "This library can to read ZIP-archive of sport activities. Support two services, Strava and Adidas running.",
+    "keywords": ["sport","activity","strava","adidas running"],
+    "homepage": "https://github.com/gracerpro/convert-sport-activity",
     "authors": [
         {
             "name": "Vyacheslav",
@@ -19,7 +21,7 @@
         "phpunit/phpunit": "^12.0"
     },
     "license": "MIT",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "Gracerpro\\ConvertSportActivity\\": "src/"
