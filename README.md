@@ -19,7 +19,7 @@ composer require gracerpro/convert-sport-activity
 For **Strava** service
 
 ```php
-use Gracerpro\ConvertSportActivity\Strava\StravaExchange;
+use Gracerpro\ConvertSportActivity\Strava\StravaArchive;
 use Gracerpro\ConvertSportActivity\Strava\StravaObserver;
 use Gracerpro\ConvertSportActivity\Strava\Activity;
 use Gracerpro\ConvertSportActivity\GpsPoint;
@@ -35,16 +35,16 @@ class EchoStravaObserver implements StravaObserver
     }
 }
 
-$stravaExchange = new StravaExchange();
+$archive = new StravaArchive();
 $observer = new EchoStravaObserver();
 
-$exchange->convert($zipFilePath, $observer);
+$archive->convert($zipFilePath, $observer);
 ```
 
-For **Addidas runing** service
+For **Adidas running** service
 
 ```php
-use Gracerpro\ConvertSportActivity\Adidas\AdidasExchange;
+use Gracerpro\ConvertSportActivity\Adidas\AdidasArchive;
 use Gracerpro\ConvertSportActivity\Adidas\AdidasObserver;
 use Gracerpro\ConvertSportActivity\Adidas\Activity;
 use Gracerpro\ConvertSportActivity\GpsPoint;
@@ -53,7 +53,7 @@ class FileAdidasObserver implements AdidasObserver
 {
     public function __construct(
         /** @var resource */
-        private $file,
+        private $stream,
     ){
     }
 
@@ -63,14 +63,18 @@ class FileAdidasObserver implements AdidasObserver
     public function onNewActivity(Activity $activity, array $points, int $index)
     {
         $text = $index . " " . $activity->id . "\n";
-        fwrite($this->file, $text . "\n");
+        fwrite($this->stream, $text . "\n");
     }
 }
 
-$stravaExchange = new AdidasExchange();
-$observer = new FileAdidasObserver();
+$stream = fopen("...");
 
-$exchange->convert($zipFilePath, $observer);
+$archive = new AdidasArchive();
+$observer = new FileAdidasObserver($stream);
+
+$archive->convert($zipFilePath, $observer);
+
+fclose($stream);
 ```
 
 
@@ -78,7 +82,7 @@ $exchange->convert($zipFilePath, $observer);
 
 ### Docker
 
-Use docker and log in to container
+Use *docker* and log in to container
 
 ```bash
 docker exec -it --user "$(id -u):$(id -g)" convert-sport-activity__php-cli bash
@@ -102,11 +106,24 @@ php -d memory_limit=1G ./vendor/bin/phpstan analyse
 
 ### phpunit
 
+Run unit tests
+
 ```bash
 vendor/bin/phpunit tests
+```
+
+Show code coverage
+
+```
+XDEBUG_MODE=coverage vendor/bin/phpunit tests --coverage-text
 ```
 
 
 ## License
 
 See [LICENSE](LICENSE).
+
+
+## TODO
+
+* unit tests

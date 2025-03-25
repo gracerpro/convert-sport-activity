@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Gracerpro\ConvertSportActivity\Strava;
 
-use ValueError;
+use InvalidArgumentException;
 
 /**
  * @see https://developers.strava.com/docs/reference/#api-models-ActivityType
@@ -48,6 +48,9 @@ enum ActivityType: string
     case Workout = 'Workout';
     case Yoga = 'Yoga';
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public static function fromServiceName(string $name): ActivityType
     {
         static $map = null;
@@ -63,6 +66,6 @@ enum ActivityType: string
             return constant(self::class . '::' . $map[$lowerName]);
         }
 
-        throw new ValueError('"' . $name . '" is not a valid backing value for enum ' . self::class);
+        throw new InvalidArgumentException('"' . $name . '" is not a valid backing value for enum ' . self::class);
     }
 }

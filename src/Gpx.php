@@ -21,9 +21,14 @@ class Gpx
             throw new GpxException("Could not open XML file.");
         }
 
+        $useInternalErrors = null;
         try {
+            $useInternalErrors = libxml_use_internal_errors(true);
             $points = $this->getPoints($reader);
         } finally {
+            if ($useInternalErrors !== null) {
+                libxml_use_internal_errors($useInternalErrors);
+            }
             $reader->close();
         }
 
@@ -41,8 +46,6 @@ class Gpx
 
         $points = [];
         $prevPoint = null;
-
-        libxml_clear_errors();
 
         while ($reader->read() !== false) {
             if ($reader->nodeType !== XMLReader::ELEMENT) {

@@ -9,7 +9,7 @@ use Gracerpro\ConvertSportActivity\GpsPoint;
 use Gracerpro\ConvertSportActivity\Gpx;
 use ZipArchive;
 
-class AdidasExchange
+class AdidasArchive
 {
     private Gpx $gpx;
 

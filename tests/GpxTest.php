@@ -1,11 +1,15 @@
 <?php
 declare(strict_types=1);
+namespace Gracerpro\ConvertSportActivity\Tests;
 
 use Gracerpro\ConvertSportActivity\Gpx;
 use Gracerpro\ConvertSportActivity\GpxException;
-use PHPUnit\Framework\Attributes\WithoutErrorHandler;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(Gpx::class)]
+#[CoversMethod(Gpx::class, 'readPoints')]
 final class GpxTest extends TestCase
 {
     public function testReadPoints(): void

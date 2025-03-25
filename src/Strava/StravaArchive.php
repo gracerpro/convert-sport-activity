@@ -22,7 +22,7 @@ readonly class ActivityResult
     }
 }
 
-class StravaExchange
+class StravaArchive
 {
     private Gpx $gpx;
 
@@ -62,11 +62,11 @@ class StravaExchange
     }
 
     public function convert(
-        string $stravaArchivePath,
+        string $zipFilePath,
         StravaObserver $observer,
         $activitiesLimit = 0
     ) {
-        $zip = $this->openZipArchive($stravaArchivePath);
+        $zip = $this->openZipArchive($zipFilePath);
 
         try {
             $this->convertArchive($zip, $observer, $activitiesLimit);
