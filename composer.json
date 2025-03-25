@@ -2,6 +2,7 @@
     "name": "gracerpro/convert-sport-activity",
     "type": "library",
     "description": "This library can to read ZIP-archive of sport activities. Support two services, Strava and Adidas running.",
+    "version": "1.0.0-dev",
     "keywords": ["sport","activity","strava","adidas running"],
     "homepage": "https://github.com/gracerpro/convert-sport-activity",
     "authors": [
