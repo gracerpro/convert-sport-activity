@@ -5,6 +5,8 @@ This library can to read ZIP-archive of sport activities
 1. Strava
 2. Adidas running
 
+![Main image](https://repository-images.githubusercontent.com/954733681/dd7f4e8f-d193-48d0-b9b9-6a7f46658dcb)
+
 
 ## Installation
 
@@ -109,7 +111,7 @@ php -d memory_limit=1G ./vendor/bin/phpstan analyse
 Run unit tests
 
 ```bash
-vendor/bin/phpunit tests
+./vendor/bin/phpunit tests
 ```
 
 Show code coverage
