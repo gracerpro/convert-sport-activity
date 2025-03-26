@@ -1,5 +1,7 @@
 # Convert sport activity
 
+[![PHP Composer](../../actions/workflows/php.yml/badge.svg)](../../actions/workflows/php.yml/badge.svg)
+
 This library can to read ZIP-archive of sport activities
 
 1. Strava
