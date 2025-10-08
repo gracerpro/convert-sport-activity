@@ -1,22 +1,22 @@
-FROM php:8.3-cli-bullseye
+FROM php:8.4-cli-alpine
 
 WORKDIR /var/www
 
-RUN apt-get update && apt-get upgrade --yes
-RUN apt-get install --yes \
-    build-essential \
+RUN apk update && apk upgrade
+RUN apk add --no-cache bash \
+    build-base \
     g++ \
     libzip-dev \
     unzip \
-    nano \
+    nano
 # Clean temporary files
-    && docker-php-source delete \
-    && apt-get autoremove --purge -y && apt-get autoclean -y && apt-get clean -y
 
 RUN docker-php-ext-install zip
 
-RUN pecl install xdebug \
-    && docker-php-ext-enable xdebug
+RUN apk add --no-cache linux-headers autoconf \
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug \
+    && pecl clear-cache
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 

@@ -9,7 +9,6 @@ This library can to read ZIP-archive of sport activities
 
 ![Main image](https://repository-images.githubusercontent.com/954733681/dd7f4e8f-d193-48d0-b9b9-6a7f46658dcb)
 
-
 ## Installation
 
 Via composer
@@ -81,7 +80,6 @@ $archive->convert($zipFilePath, $observer);
 fclose($stream);
 ```
 
-
 ## Development
 
 ### Docker
@@ -89,6 +87,7 @@ fclose($stream);
 Use *docker* and log in to container
 
 ```bash
+docker compose up --detach
 docker exec -it --user "$(id -u):$(id -g)" convert-sport-activity__php-cli bash
 ```
 
@@ -118,15 +117,13 @@ Run unit tests
 
 Show code coverage
 
-```
+```bash
 XDEBUG_MODE=coverage vendor/bin/phpunit tests --coverage-text
 ```
-
 
 ## License
 
 See [LICENSE](LICENSE).
-
 
 ## TODO
 
