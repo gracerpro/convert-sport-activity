@@ -127,6 +127,14 @@ XDEBUG_MODE=coverage vendor/bin/phpunit tests --coverage-text
 
 See [LICENSE](LICENSE).
 
+## Update version
+
+```bash
+# main branch
+git tag v1.0.3
+git push --tags
+```
+
 ## TODO
 
 * unit tests
