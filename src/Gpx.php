@@ -112,7 +112,10 @@ class Gpx
         return $points;
     }
 
-    private function checkError()
+    /**
+     * @throws GpxException
+     */
+    private function checkError(): void
     {
         $error = libxml_get_last_error();
         if ($error !== false) {

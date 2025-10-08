@@ -1,5 +1,5 @@
 parameters:
-    level: 5
+    level: 10
     parallel:
         jobSize: 20
         maximumNumberOfProcesses: 4

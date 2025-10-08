@@ -64,8 +64,8 @@ class StravaArchive
     public function convert(
         string $zipFilePath,
         StravaObserver $observer,
-        $activitiesLimit = 0
-    ) {
+        int $activitiesLimit = 0
+    ): void {
         $zip = $this->openZipArchive($zipFilePath);
 
         try {
@@ -91,7 +91,7 @@ class StravaArchive
         return $zip;
     }
 
-    private function convertArchive(ZipArchive $zip, StravaObserver $observer, int $activitiesLimit)
+    private function convertArchive(ZipArchive $zip, StravaObserver $observer, int $activitiesLimit): void
     {
         $header = $this->readHeader($zip);
         $this->readActivities($zip, $header, $observer, $activitiesLimit);
@@ -102,7 +102,7 @@ class StravaArchive
         ActivitiesHeader $header,
         StravaObserver $observer,
         int $activitiesLimit,
-    ) {
+    ): void {
         $file = $this->getActivitiesStream($zip);
         fgets($file); // skip header
         $count = 0;
@@ -151,7 +151,13 @@ class StravaArchive
             $stream = tmpfile();
             fwrite($stream, $xml);
 
-            $uri = stream_get_meta_data($stream)['uri'];
+            $metaData = stream_get_meta_data($stream);
+
+            if (!isset($metaData['uri'])) {
+                throw new ConvertException('Could not find "uri" field on stream meta data.');
+            }
+
+            $uri = $metaData['uri'];
             $points = $this->gpx->readPoints($uri);
         } finally {
             if (is_resource($stream)) {
@@ -162,6 +168,9 @@ class StravaArchive
         return $points;
     }
 
+    /**
+     * @param array<string|null> $data
+     */
     private function getActivity(array $data, ActivitiesHeader $header): ActivityResult
     {
         // For example, "Sep 2, 2019, 4:02:32 PM"
@@ -176,6 +185,10 @@ class StravaArchive
         }
 
         $sourceActivityType = $data[$header->getIndex(ActivitiesHeader::NAME_TYPE)];
+
+        if ($sourceActivityType === null) {
+            throw new ConvertException('Empty activity type.');
+        }
         try {
             $type = ActivityType::fromServiceName($sourceActivityType);
         } catch (Throwable) {
@@ -213,7 +226,7 @@ class StravaArchive
         );
     }
 
-    private function readHeader(ZipArchive $zip)
+    private function readHeader(ZipArchive $zip): ActivitiesHeader
     {
         $file = $this->getActivitiesStream($zip);
         $row = $this->getCsvLine($file);
@@ -230,6 +243,9 @@ class StravaArchive
         return $header;
     }
 
+    /**
+     * @param array<string|null> $row
+     */
     private function isBlankLine(array $row): bool
     {
         return count($row) === 1 && $row[0] === null;
@@ -237,6 +253,7 @@ class StravaArchive
 
     /**
      * @param resource $file
+     * @return false|array<string|null>
      */
     private function getCsvLine($file): array|false
     {

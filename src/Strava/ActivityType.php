@@ -53,9 +53,11 @@ enum ActivityType: string
      */
     public static function fromServiceName(string $name): ActivityType
     {
+        /** @var null|array<string, string> $map */
         static $map = null;
 
         if ($map === null) {
+            $map = [];
             foreach (self::cases() as $case) {
                 $map[strtolower($case->value)] = $case->name;
             }
@@ -63,7 +65,10 @@ enum ActivityType: string
 
         $lowerName = strtolower($name);
         if (isset($map[$lowerName])) {
-            return constant(self::class . '::' . $map[$lowerName]);
+            /** @var ActivityType $result */
+            $result = constant(self::class . '::' . $map[$lowerName]);
+
+            return $result;
         }
 
         throw new InvalidArgumentException('"' . $name . '" is not a valid backing value for enum ' . self::class);

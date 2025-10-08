@@ -9,5 +9,5 @@ interface StravaObserver
     /**
      * @param GpsPoint[] $points
      */
-    public function onNewActivity(Activity $activity, array $points, int $index);
+    public function onNewActivity(Activity $activity, array $points, int $index): void;
 }
