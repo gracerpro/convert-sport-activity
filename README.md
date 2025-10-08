@@ -32,7 +32,7 @@ class EchoStravaObserver implements StravaObserver
     /**
      * @param GpsPoint[] $points
      */
-    public function onNewActivity(Activity $activity, array $points, int $index)
+    public function onNewActivity(Activity $activity, array $points, int $index): void
     {
         echo $index . " " . $activity->id . "\n";
     }
@@ -63,7 +63,7 @@ class FileAdidasObserver implements AdidasObserver
     /**
      * @param GpsPoint[] $points
      */
-    public function onNewActivity(Activity $activity, array $points, int $index)
+    public function onNewActivity(Activity $activity, array $points, int $index): void
     {
         $text = $index . " " . $activity->id . "\n";
         fwrite($this->stream, $text . "\n");
@@ -89,6 +89,8 @@ Use *docker* and log in to container
 ```bash
 docker compose up --detach
 docker exec -it --user "$(id -u):$(id -g)" convert-sport-activity__php-cli bash
+
+composer install
 ```
 
 ### php-cs-fixer

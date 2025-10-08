@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d8d03a0cb492793902be1b981a68e430",
+    "content-hash": "310f696e196331cb9825f0eeac260c6b",
     "packages": [],
     "packages-dev": [
         {
@@ -749,8 +749,8 @@
             "version": "2.1.x-dev",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6bdce5da45d93c61b0bec4d9fa138fc688307dbf",
-                "reference": "6bdce5da45d93c61b0bec4d9fa138fc688307dbf",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/47a820b1df57a518f09d46e8abd74ef8846b31ba",
+                "reference": "47a820b1df57a518f09d46e8abd74ef8846b31ba",
                 "shasum": ""
             },
             "require": {
@@ -796,7 +796,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-07T06:03:08+00:00"
+            "time": "2025-10-08T09:36:15+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -3015,12 +3015,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "caff466632e62fc7d943b0f051713612ba0765ab"
+                "reference": "b7dfa98df95226f19812caa8a8d95f02e96e2e50"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/caff466632e62fc7d943b0f051713612ba0765ab",
-                "reference": "caff466632e62fc7d943b0f051713612ba0765ab",
+                "url": "https://api.github.com/repos/symfony/console/zipball/b7dfa98df95226f19812caa8a8d95f02e96e2e50",
+                "reference": "b7dfa98df95226f19812caa8a8d95f02e96e2e50",
                 "shasum": ""
             },
             "require": {
@@ -3105,7 +3105,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-10-04T11:31:13+00:00"
+            "time": "2025-10-08T08:52:57+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -4505,7 +4505,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "~8.3",
+        "php": "~8.4",
         "ext-json": "*",
         "ext-zip": "*"
     },
