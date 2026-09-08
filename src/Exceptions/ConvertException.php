@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Gracerpro\ConvertSportActivity;
+namespace Gracerpro\ConvertSportActivity\Exceptions;
 
 use Exception;
 

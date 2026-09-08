@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Gracerpro\ConvertSportActivity\Tests\Strava;
 
-use Gracerpro\ConvertSportActivity\ConvertException;
+use Gracerpro\ConvertSportActivity\Exceptions\ConvertException;
 use Gracerpro\ConvertSportActivity\Strava\ActivitiesHeader;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;

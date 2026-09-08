@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Gracerpro\ConvertSportActivity;
 
 use DateTimeImmutable;
+use Gracerpro\ConvertSportActivity\Exceptions\GpxException;
 use XMLReader;
 
 class Gpx
