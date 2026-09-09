@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Gracerpro\ConvertSportActivity\Adidas;
 
 use DateTimeImmutable;
+use Exception;
 use Gracerpro\ConvertSportActivity\ArchiveHelper;
 use Gracerpro\ConvertSportActivity\Exceptions\ConvertException;
 use Throwable;
@@ -91,7 +92,6 @@ class AdidasArchive
     {
         $names = [];
         $startName = self::SESSIONS_NAME;
-        $startNameSize = strlen($startName);
 
         if ($zip->numFiles > 0) {
             $index = $zip->locateName($startName);
@@ -104,13 +104,17 @@ class AdidasArchive
 
                 if ($index !== false) {
                     $startName = $startName2;
-                    $startNameSize = strlen($startName);
                 }
             }
         }
+        $startNameSize = strlen($startName);
 
         for ($i = 0; $i < $zip->numFiles; ++$i) {
             $name = $zip->getNameIndex($i);
+
+            if ($name === false) {
+                throw new ConvertException("Name is null, but it's impossible.");
+            }
 
             // 1. Sport-sessions/2023-07-10_13-05-32-UTC_935b13d7-5e1e-44e1-9238-73c65dbe28c1.json
             // 2. Sport-sessions/GPS-data/2023-07-10_13-05-32-UTC_935b13d7-5e1e-44e1-9238-73c65dbe28c1.json
@@ -127,6 +131,11 @@ class AdidasArchive
                 if ($startNameSize === $slashIndex + 1) { // 1.
                     $fileName = substr($name, $slashIndex + 1);
                     $dotIndex = strrpos($fileName, '.');
+
+                    if ($dotIndex === false) {
+                        throw new ConvertException('Unknown entry in zip archive, a point is expected in the name.');
+                    }
+
                     $name = substr($fileName, 0, $dotIndex);
                     $names[$name] = true;
                 }
@@ -140,7 +149,7 @@ class AdidasArchive
         ZipArchive $zip,
         AdidasObserver $observer,
         int $activitiesLimit,
-    ) {
+    ): void {
         $count = 0;
         $names = $this->readNames($zip);
 
@@ -163,6 +172,7 @@ class AdidasArchive
         foreach ($names as $name) {
             $activity = $this->readActivity($zip, $prefix . self::SESSIONS_NAME . $name .'.json');
 
+            /** @var GpsPoint[] $points */
             $points = [];
             $jsonIndex = $zip->locateName($prefix . self::SESSIONS_NAME . 'GPS-data/' . $name . '.json');
 
@@ -193,6 +203,26 @@ class AdidasArchive
             throw new ConvertException('Could not get a content by zip name "' . $zipName . '".');
         }
 
+        /**
+         * @var array{
+         *   id: string,
+         *   start_time: int,
+         *   end_time: int,
+         *   features?: array{
+         *     type: 'track_metrics'|'map'|'heart_rate'|'initial_values'|'origin',
+         *     attributes: array{
+         *       distance?: int,
+         *       average_speed?: string|float,
+         *       average_pace: float,
+         *       max_speed?: string|float,
+         *     }
+         *   }[],
+         *   sport_type_id: string|int,
+         *   duration: int,
+         *   start_time_timezone_offset: int,
+         *   end_time_timezone_offset: int,
+         * } $data
+         */
         $data = json_decode($json, true);
         $startTime = (int)($data['start_time'] / 1000);
         $endTime = (int)($data['end_time'] / 1000);
@@ -245,6 +275,15 @@ class AdidasArchive
             throw new ConvertException('Could not get a GPS content.');
         }
 
+        /**
+         * @var array{
+         *   latitude: float,
+         *   longitude: float,
+         *   altitude: float,
+         *   timestamp: int,
+         *   speed: float,
+         * }[]
+         */
         $data = json_decode($json, true);
 
         $points = [];
@@ -261,6 +300,9 @@ class AdidasArchive
         return $points;
     }
 
+    /**
+     * @return GpsPoint[]
+     */
     private function readGpxPoints(ZipArchive $zip, int $index): array
     {
         $xml = $zip->getFromIndex($index);
@@ -274,8 +316,13 @@ class AdidasArchive
             $stream = tmpfile();
             fwrite($stream, $xml);
 
-            $uri = stream_get_meta_data($stream)['uri'];
-            $points = $this->gpx->readPoints($uri);
+            $streamData = stream_get_meta_data($stream);
+
+            if (!isset($streamData['uri'])) {
+                throw new ConvertException('Uri field is null.');
+            }
+
+            $points = $this->gpx->readPoints($streamData['uri']);
         } finally {
             if (is_resource($stream)) {
                 fclose($stream);
