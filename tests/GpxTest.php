@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Gracerpro\ConvertSportActivity\Tests;
 
 use Gracerpro\ConvertSportActivity\Gpx;
-use Gracerpro\ConvertSportActivity\GpxException;
+use Gracerpro\ConvertSportActivity\Exceptions\GpxException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\TestCase;

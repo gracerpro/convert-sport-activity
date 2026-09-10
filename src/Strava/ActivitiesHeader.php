@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Gracerpro\ConvertSportActivity\Strava;
 
-use Gracerpro\ConvertSportActivity\ConvertException;
+use Gracerpro\ConvertSportActivity\Exceptions\ConvertException;
 
 class ActivitiesHeader
 {
@@ -23,7 +23,7 @@ class ActivitiesHeader
     private array $indexes = [];
 
     /**
-     * @param array<string|null> $fields
+     * @param (string|null)[] $fields
      */
     public function __construct(array $fields)
     {

@@ -4,7 +4,9 @@ namespace Gracerpro\ConvertSportActivity\Strava;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use Gracerpro\ConvertSportActivity\ConvertException;
+use Gracerpro\ConvertSportActivity\ArchiveHelper;
+use Gracerpro\ConvertSportActivity\Exceptions\ConvertException;
+use Gracerpro\ConvertSportActivity\Exceptions\CheckException;
 use Gracerpro\ConvertSportActivity\Gpx;
 use Gracerpro\ConvertSportActivity\GpsPoint;
 use Throwable;
@@ -29,6 +31,8 @@ class StravaArchive
     private DateTimeZone $dateTimeZone;
 
     private const ACTIVITIES_FILE_NAME = 'activities.csv';
+
+    private string|null $namePrefix = null;
 
     public function __construct()
     {
@@ -59,6 +63,41 @@ class StravaArchive
         }
 
         return $count;
+    }
+
+    /**
+     * @throws CheckException
+     */
+    public function check(string $zipFilePath): void
+    {
+        $zip = $this->openZipArchive($zipFilePath);
+        $prefix = '';
+
+        try {
+            $entryIndex = $zip->locateName(self::ACTIVITIES_FILE_NAME);
+
+            if ($entryIndex === false) {
+                $prefix = ArchiveHelper::getPrefix($zip);
+
+                if ($prefix === null) {
+                    $prefix = '';
+                } else {
+                    $entryIndex = $zip->locateName($prefix . self::ACTIVITIES_FILE_NAME);
+                }
+            }
+            if ($entryIndex === false) {
+                throw new CheckException('Could not find file "' . self::ACTIVITIES_FILE_NAME . '" in an archive.');
+            }
+
+            $activitiesDirectory = 'activities/';
+            $entryIndex = $zip->locateName($prefix . $activitiesDirectory);
+
+            if ($entryIndex === false) {
+                throw new CheckException('Could not find directory "' . $activitiesDirectory . '" in an archive.');
+            }
+        } finally {
+            $zip->close();
+        }
     }
 
     public function convert(
@@ -103,20 +142,27 @@ class StravaArchive
         StravaObserver $observer,
         int $activitiesLimit,
     ): void {
+        $number = 1;
         $file = $this->getActivitiesStream($zip);
         fgets($file); // skip header
         $count = 0;
 
         try {
             while (true) {
+                ++$number;
                 $row = $this->getCsvLine($file);
+
                 if ($row === false) {
                     break;
                 }
                 if ($this->isBlankLine($row)) {
                     continue;
                 }
-                $activityResult = $this->getActivity($row, $header);
+                try {
+                    $activityResult = $this->getActivity($row, $header);
+                } catch (ConvertException $ex) {
+                    throw new ConvertException('Row number ' . $number . '. ' . $ex->getMessage());
+                }
                 $points = [];
 
                 if ($activityResult->fileName) {
@@ -142,7 +188,19 @@ class StravaArchive
     {
         $xml = $zip->getFromName($fileName);
 
-        if (!$xml) {
+        if ($xml === false) {
+            if ($this->namePrefix === null) {
+                $this->namePrefix = ArchiveHelper::getPrefix($zip);
+
+                if ($this->namePrefix === null) {
+                    $this->namePrefix = '';
+                }
+            }
+            if ($this->namePrefix !== '') {
+                $xml = $zip->getFromName($this->namePrefix . $fileName);
+            }
+        }
+        if ($xml === false) {
             throw new ConvertException('Could not find "' . $fileName . '" in zip archive.');
         }
 
@@ -151,14 +209,13 @@ class StravaArchive
             $stream = tmpfile();
             fwrite($stream, $xml);
 
-            $metaData = stream_get_meta_data($stream);
+            $streamData = stream_get_meta_data($stream);
 
-            if (!isset($metaData['uri'])) {
-                throw new ConvertException('Could not find "uri" field on stream meta data.');
+            if (!isset($streamData['uri'])) {
+                throw new ConvertException('Uri field is null on stream data.');
             }
 
-            $uri = $metaData['uri'];
-            $points = $this->gpx->readPoints($uri);
+            $points = $this->gpx->readPoints($streamData['uri']);
         } finally {
             if (is_resource($stream)) {
                 fclose($stream);
@@ -169,7 +226,8 @@ class StravaArchive
     }
 
     /**
-     * @param array<string|null> $data
+     * @throws ConvertException
+     * @param (string|null)[] $data
      */
     private function getActivity(array $data, ActivitiesHeader $header): ActivityResult
     {
@@ -187,8 +245,9 @@ class StravaArchive
         $sourceActivityType = $data[$header->getIndex(ActivitiesHeader::NAME_TYPE)];
 
         if ($sourceActivityType === null) {
-            throw new ConvertException('Empty activity type.');
+            throw new ConvertException('Type is null.');
         }
+
         try {
             $type = ActivityType::fromServiceName($sourceActivityType);
         } catch (Throwable) {
@@ -244,7 +303,7 @@ class StravaArchive
     }
 
     /**
-     * @param array<string|null> $row
+     * @param (string|null)[] $row
      */
     private function isBlankLine(array $row): bool
     {
@@ -253,7 +312,7 @@ class StravaArchive
 
     /**
      * @param resource $file
-     * @return false|array<string|null>
+     * @return (string|null)[]|false
      */
     private function getCsvLine($file): array|false
     {
@@ -267,6 +326,13 @@ class StravaArchive
     {
         $file = $zip->getStream(self::ACTIVITIES_FILE_NAME);
 
+        if (!$file) {
+            $prefix = ArchiveHelper::getPrefix($zip);
+
+            if ($prefix !== null) {
+                $file = $zip->getStream($prefix . self::ACTIVITIES_FILE_NAME);
+            }
+        }
         if (!$file) {
             throw new ConvertException('Could not find "' . self::ACTIVITIES_FILE_NAME . '" in zip archive.');
         }
