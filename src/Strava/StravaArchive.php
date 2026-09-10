@@ -74,25 +74,25 @@ class StravaArchive
         $prefix = '';
 
         try {
-            $fileIndex = $zip->locateName(self::ACTIVITIES_FILE_NAME);
+            $entryIndex = $zip->locateName(self::ACTIVITIES_FILE_NAME);
 
-            if ($fileIndex === false) {
+            if ($entryIndex === false) {
                 $prefix = ArchiveHelper::getPrefix($zip);
 
                 if ($prefix === null) {
                     $prefix = '';
                 } else {
-                    $fileIndex = $zip->locateName($prefix . self::ACTIVITIES_FILE_NAME);
+                    $entryIndex = $zip->locateName($prefix . self::ACTIVITIES_FILE_NAME);
                 }
             }
-            if ($fileIndex === false) {
-                throw new CheckException('Could not find the file "' . self::ACTIVITIES_FILE_NAME . '" in an archive.');
+            if ($entryIndex === false) {
+                throw new CheckException('Could not find file "' . self::ACTIVITIES_FILE_NAME . '" in an archive.');
             }
 
             $activitiesDirectory = 'activities/';
-            $fileIndex = $zip->locateName($prefix . $activitiesDirectory);
+            $entryIndex = $zip->locateName($prefix . $activitiesDirectory);
 
-            if ($fileIndex === false) {
+            if ($entryIndex === false) {
                 throw new CheckException('Could not find directory "' . $activitiesDirectory . '" in an archive.');
             }
         } finally {

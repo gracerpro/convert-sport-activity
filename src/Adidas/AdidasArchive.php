@@ -5,6 +5,7 @@ namespace Gracerpro\ConvertSportActivity\Adidas;
 use DateTimeImmutable;
 use Exception;
 use Gracerpro\ConvertSportActivity\ArchiveHelper;
+use Gracerpro\ConvertSportActivity\Exceptions\CheckException;
 use Gracerpro\ConvertSportActivity\Exceptions\ConvertException;
 use Throwable;
 use Gracerpro\ConvertSportActivity\GpsPoint;
@@ -35,6 +36,41 @@ class AdidasArchive
         }
 
         return $count;
+    }
+
+    /**
+     * @throws CheckException
+     */
+    public function check(string $zipFilePath): void
+    {
+        $zip = $this->openZipArchive($zipFilePath);
+        $prefix = '';
+
+        try {
+            $entryIndex = $zip->locateName(self::SESSIONS_NAME);
+
+            if ($entryIndex === false) {
+                $prefix = ArchiveHelper::getPrefix($zip);
+
+                if ($prefix === null) {
+                    $prefix = '';
+                } else {
+                    $entryIndex = $zip->locateName($prefix . self::SESSIONS_NAME);
+                }
+            }
+            if ($entryIndex === false) {
+                throw new CheckException('Could not find directory "' . self::SESSIONS_NAME . '" in an archive.');
+            }
+
+            $gpsDirectory = self::SESSIONS_NAME . 'GPS-data/';
+            $entryIndex = $zip->locateName($prefix . $gpsDirectory);
+
+            if ($entryIndex === false) {
+                throw new CheckException('Could not find directory "' . $gpsDirectory . '" in an archive.');
+            }
+        } finally {
+            $zip->close();
+        }
     }
 
     /**
