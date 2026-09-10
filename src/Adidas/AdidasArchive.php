@@ -319,7 +319,7 @@ class AdidasArchive
             $streamData = stream_get_meta_data($stream);
 
             if (!isset($streamData['uri'])) {
-                throw new ConvertException('Uri field is null.');
+                throw new ConvertException('Uri field is null on stream data.');
             }
 
             $points = $this->gpx->readPoints($streamData['uri']);

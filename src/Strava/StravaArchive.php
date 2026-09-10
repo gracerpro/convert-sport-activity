@@ -68,7 +68,7 @@ class StravaArchive
     /**
      * @throws CheckException
      */
-    public function check(string $zipFilePath)
+    public function check(string $zipFilePath): void
     {
         $zip = $this->openZipArchive($zipFilePath);
         $prefix = '';
@@ -103,8 +103,8 @@ class StravaArchive
     public function convert(
         string $zipFilePath,
         StravaObserver $observer,
-        $activitiesLimit = 0
-    ) {
+        int $activitiesLimit = 0
+    ): void {
         $zip = $this->openZipArchive($zipFilePath);
 
         try {
@@ -130,7 +130,7 @@ class StravaArchive
         return $zip;
     }
 
-    private function convertArchive(ZipArchive $zip, StravaObserver $observer, int $activitiesLimit)
+    private function convertArchive(ZipArchive $zip, StravaObserver $observer, int $activitiesLimit): void
     {
         $header = $this->readHeader($zip);
         $this->readActivities($zip, $header, $observer, $activitiesLimit);
@@ -141,21 +141,28 @@ class StravaArchive
         ActivitiesHeader $header,
         StravaObserver $observer,
         int $activitiesLimit,
-    ) {
+    ): void {
+        $number = 1;
         $file = $this->getActivitiesStream($zip);
         fgets($file); // skip header
         $count = 0;
 
         try {
             while (true) {
+                ++$number;
                 $row = $this->getCsvLine($file);
+
                 if ($row === false) {
                     break;
                 }
                 if ($this->isBlankLine($row)) {
                     continue;
                 }
-                $activityResult = $this->getActivity($row, $header);
+                try {
+                    $activityResult = $this->getActivity($row, $header);
+                } catch (ConvertException $ex) {
+                    throw new ConvertException('Row number ' . $number . '. ' . $ex->getMessage());
+                }
                 $points = [];
 
                 if ($activityResult->fileName) {
@@ -202,8 +209,13 @@ class StravaArchive
             $stream = tmpfile();
             fwrite($stream, $xml);
 
-            $uri = stream_get_meta_data($stream)['uri'];
-            $points = $this->gpx->readPoints($uri);
+            $streamData = stream_get_meta_data($stream);
+
+            if (!isset($streamData['uri'])) {
+                throw new ConvertException('Uri field is null on stream data.');
+            }
+
+            $points = $this->gpx->readPoints($streamData['uri']);
         } finally {
             if (is_resource($stream)) {
                 fclose($stream);
@@ -213,6 +225,10 @@ class StravaArchive
         return $points;
     }
 
+    /**
+     * @throws ConvertException
+     * @param (string|null)[] $data
+     */
     private function getActivity(array $data, ActivitiesHeader $header): ActivityResult
     {
         // For example, "Sep 2, 2019, 4:02:32 PM"
@@ -227,6 +243,11 @@ class StravaArchive
         }
 
         $sourceActivityType = $data[$header->getIndex(ActivitiesHeader::NAME_TYPE)];
+
+        if ($sourceActivityType === null) {
+            throw new ConvertException('Type is null.');
+        }
+
         try {
             $type = ActivityType::fromServiceName($sourceActivityType);
         } catch (Throwable) {
@@ -264,7 +285,7 @@ class StravaArchive
         );
     }
 
-    private function readHeader(ZipArchive $zip)
+    private function readHeader(ZipArchive $zip): ActivitiesHeader
     {
         $file = $this->getActivitiesStream($zip);
         $row = $this->getCsvLine($file);
@@ -281,6 +302,9 @@ class StravaArchive
         return $header;
     }
 
+    /**
+     * @param (string|null)[] $row
+     */
     private function isBlankLine(array $row): bool
     {
         return count($row) === 1 && $row[0] === null;
@@ -288,6 +312,7 @@ class StravaArchive
 
     /**
      * @param resource $file
+     * @return (string|null)[]|false
      */
     private function getCsvLine($file): array|false
     {

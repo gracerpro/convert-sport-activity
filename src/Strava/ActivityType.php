@@ -66,7 +66,11 @@ enum ActivityType: string
         $lowerName = strtolower($name);
 
         if (isset($map[$lowerName])) {
-            return constant(self::class . '::' . $map[$lowerName]);
+            $type = constant(self::class . '::' . $map[$lowerName]);
+
+            /** @var ActivityType $type */
+
+            return $type;
         }
 
         throw new InvalidArgumentException('"' . $name . '" is not a valid backing value for enum ' . self::class);
